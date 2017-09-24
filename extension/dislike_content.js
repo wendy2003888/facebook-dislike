@@ -13,7 +13,11 @@ function renderDislikeButtons(likelinks, keys, dislike_count, disliked){
         if(!disliked.hasOwnProperty(post_id)){
             disliked[post_id] = false;
         }
+        if(!dislike_count.hasOwnProperty(post_id)){
+            dislike_count[post_id] = 0;
+        }
         var new_likelink = buildDislikeButton(likelinks[i], disliked[post_id]);
+        new_likelink.setAttribute("title", dislike_count[post_id] + " people disliked this post");
         // var new_likelink = likelinks[i].cloneNode(true);
         new_likelink.setAttribute("post_identifier", post_id);
         new_likelink.removeAttribute("href");
@@ -103,11 +107,13 @@ function updateDislikeButtons(){
 
 
 function dislike_click_eventhandler(event){
+    last_pressed_btn = event.target;
     var post_id = event.target.getAttribute("post_identifier");
     button_undislike(event.target, post_id);
 }
 
 function undislike_click_eventhandler(event){
+    last_pressed_btn = event.target;
     var post_id = event.target.getAttribute("post_identifier");
     button_dislike(event.target, post_id);
 }
@@ -222,14 +228,21 @@ function decide_update(){
 }
 
 
+function updateDislikeCount(new_count){
+    last_pressed_btn.setAttribute("title", new_count + " people disliked this post");
+}
+
+
 
 // onload:
 chrome.runtime.onMessage.addListener(function(msg){
     if(msg.action == "render"){
         renderDislikeButtons(target_likelinks, target_keys, msg.data.dislike_count, msg.data.disliked);
     }
+    else if(msg.action == "updateDislikeCount"){
+        updateDislikeCount(msg.data.dislike_count);
+    }
 });
-
 
 
 var user_id = getCurrentUserId();
@@ -257,43 +270,4 @@ window.setTimeout(decide_update, 2000);
 var nonClickURL = chrome.extension.getURL("resources/td_notclicked.png");
 var ClickURL = chrome.extension.getURL("resources/td_clicked.png");
 
-function changeImage(btn, clicked)
-{
-    if(clicked){
-        btn.style.color = "88,144,255";
-        image_icon = document.createElement("img");
-        image_icon.setAttribute("name","disbutton");
-        image_icon.setAttribute("src","nonClickURL");
-        image_icon.setAttribute("width","20");
-        image_icon.setAttribute("height","20");
-        image_icon.setAttribute("border","0");
-        btn.parentElement.insertBefore(image_icon, btn.nextSibling);
-    }
-    else {
-        btn.style.color = "0x000000";
-        document.images["disbutton"].src=ClickURL;
-        image_icon = document.createElement("img");
-        image_icon.setAttribute("name","disbutton");
-        image_icon.setAttribute("src","nonClickURL");
-        image_icon.setAttribute("width","20");
-        image_icon.setAttribute("height","20");
-        image_icon.setAttribute("border","0");
-        btn.parentElement.insertBefore(image_icon, btn.nextSibling);
-    }
-}
 
-
-
-// var dislike_icon = likelinks[i].cloneNode(true);
-// dislike_icon.removeAttribute();
-// dislike_icon.setAttribute("onClick","changeImage()");
-
-// dislike_icon.appendChild(image_icon);
-
-
-// likelinks[i].parentElement.insertBefore(dislike_icon, newlikelink);//before the Dislike link (clickable)
-
-// //dot between like and dislike in comments
-// dot = document.createElement("span");
-// dot.innerHTML=" · ";
-// //insertBefore the dislike in the comments

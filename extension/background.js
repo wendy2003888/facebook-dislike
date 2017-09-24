@@ -57,7 +57,8 @@ function userDislike(user_id, post_id){
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function(){
         if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200){
-            
+            var jdata = JSON.parse(xhr.responseText);
+            callUpdateCount(jdata.updated_count);
         }
     }
 
@@ -78,7 +79,8 @@ function userUndislike(user_id, post_id){
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function(){
         if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200){
-
+            var jdata = JSON.parse(xhr.responseText);
+            callUpdateCount(jdata.updated_count);
         }
     }
 
@@ -118,5 +120,11 @@ function getPostsDislikeInfo(user_id, post_id_list){
 function callRefreshContent(data){
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {action:"render", data:{disliked:data.disliked, dislike_count:data.dislike_count}}, function(response) {});
+    });
+}
+
+function callUpdateCount(updated_count){
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {action:"updateDislikeCount", data:{dislike_count: updated_count}}, function(response) {});
     });
 }
