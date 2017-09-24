@@ -5,3 +5,5 @@ SQLALCHEMY_DATABASE_URI = 'postgres://hfoedgjlwueetr:' + \
     'compute-1.amazonaws.com:5432/db5cbvmccimpat'
 
 HOST = '107.170.237.213'
+
+JSON_SORT_KEYS = False

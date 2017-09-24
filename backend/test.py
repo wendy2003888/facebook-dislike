@@ -23,15 +23,19 @@ def test_user_undislike():
     print 'user_undislike response : %s' % response.content
     return
 
-def test_get_dislike_count():
-    response = requests.get(url.LOCAL_URL + url.GET_DISLIKE_COUNT_URI)
-    print 'get_dislike_count response : %s' % response.content
+def test_get_dislike_info():
+    data = {
+        'posts' : ['123_456', '233_666'], 
+        'user_id' : '233'
+    }
+    response = requests.post(url.LOCAL_URL + url.GET_DISLIKE_INFO_URI, json=data)
+    print 'get_dislike_info response : %s' % response.content
     return
 
 if __name__ == '__main__':
-    test_user_dislike()
-    test_user_undislike()
-    test_get_dislike_count()
+    # test_user_dislike()
+    # test_user_undislike()
+    test_get_dislike_info()
 
 
 
