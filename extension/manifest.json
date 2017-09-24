@@ -8,7 +8,7 @@
     "browser_action": {
       "default_icon": "icon.png",
       "default_popup": "popup.html",
-      "default_title": "Click here!"
+      "default_title": "Dislike!"
     },
 
     "background": {
@@ -17,13 +17,22 @@
 
     "content_scripts": [
         {
-            "matches": ["https://www.google.com/*"],
-            "js": ["test.js"]
+            "matches": [
+                "https://www.facebook.com/*",
+                "http://www.facebook.com/*"
+            ],
+            "css": ["dislike.css"],
+            "js": ["dislike_content.js"]
         }
     ],
 
+    "web_accessible_resources": [
+        "resources/td_clicked.png",
+        "resources/td_notclicked.png"
+    ],
+
     "permissions": [
-      "http://127.0.0.1:5000/",
+      "<all_urls>",
       "activeTab",
       "storage"
     ]

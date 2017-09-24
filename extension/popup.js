@@ -88,12 +88,22 @@ function getSavedBackgroundColor(url, callback) {
  */
 function saveBackgroundColor(url, color) {
   var items = {};
-  items[url] = color;
+  items[url].color = color;
   // See https://developer.chrome.com/apps/storage#type-StorageArea. We omit the
   // optional callback since we don't need to perform any action once the
   // background color is saved.
   chrome.storage.sync.set(items);
 }
+
+
+
+
+
+function saveBrushSize(url, size){
+  var items = {}
+}
+
+
 
 // This extension loads the saved background color for the current tab if one
 // exists. The user can select a new background color from the dropdown for the
@@ -105,22 +115,37 @@ function saveBackgroundColor(url, color) {
 // user devices.
 document.addEventListener('DOMContentLoaded', () => {
   getCurrentTabUrl((url) => {
-    var dropdown = document.getElementById('dropdown');
+    var color_dropdown = document.getElementById('color_dropdown');
 
-    // Load the saved background color for this page and modify the dropdown
+    // Load the saved background color for this page and modify the color_dropdown
     // value, if needed.
     getSavedBackgroundColor(url, (savedColor) => {
       if (savedColor) {
         changeBackgroundColor(savedColor);
-        dropdown.value = savedColor;
+        color_dropdown.value = savedColor;
       }
     });
 
-    // Ensure the background color is changed and saved when the dropdown
+    // Ensure the background color is changed and saved when the color_dropdown
     // selection changes.
-    dropdown.addEventListener('change', () => {
-      changeBackgroundColor(dropdown.value);
-      saveBackgroundColor(url, dropdown.value);
+    color_dropdown.addEventListener('change', () => {
+      changeBackgroundColor(color_dropdown.value);
+      saveBackgroundColor(url, color_dropdown.value);
     });
+
+
+    var size_dropdown = document.getElementById('size_dropdown');
+
+    getSavedBrushSize(url, (savedBrushSize) => {
+      if(savedBrushSize){
+        changeBrushSize(savedBrushSize);
+        size_dropdown.value = savedBrushSize;
+      }
+    });
+
+    size_dropdown.addEventListener('change', () => {
+      
+    })
+    
   });
 });
