@@ -13,7 +13,7 @@ def user_dislike():
         row = Dislike(postid, userid)
         row.save()
         res_data = {'status': status_code.success,
-                    'updated_count': Dislike.query.count(),
+                    'updated_count': Dislike.query.filter_by(postid=postid).count(),
                     'reason': ''}
         return json.jsonify(res_data)
     except Exception as e:
@@ -30,7 +30,7 @@ def user_undislike():
         db.session.delete(row)
         db.session.commit()
         res_data = {'status': status_code.success,
-                    'updated_count': Dislike.query.count(),
+                    'updated_count': Dislike.query.filter_by(postid=postid).count(),
                     'reason': ''}
         return json.jsonify(res_data)
     except Exception as e:
@@ -43,20 +43,20 @@ def get_dislike_info():
     try:
         req_data = request.get_json()
         userid, posts = req_data['user_id'], req_data['posts']
-        # Which is faster? join the column user_id in posts or for loop
-        rows = Dislike.query.with_entities(Dislike.postid).filter(Dislike.userid==userid, Dislike.postid.in_(posts)).all()
-        dic = dict(map(lambda x : (x, False), posts))
-        for row in rows:
-            dic[row.postid] = True
+        post_rows = Dislike.query.filter(Dislike.postid.in_(posts))
+        cnt_data = post_rows.group_by(Dislike.postid).with_entities(Dislike.postid, db.func.count(Dislike.postid))
+        cnt_dic = dict(map(lambda x : (x, 0), posts))
+        for data in cnt_data:
+            cnt_dic[data[0]] = data[1]
+        info_data = post_rows.with_entities(Dislike.postid).filter(Dislike.userid==userid).all()
+        info_dic = dict(map(lambda x : (x, False), posts))
+        for data in info_data:
+            info_dic[data.postid] = True
         res_data = {'status': status_code.success,
-                    'dislike_count': len(rows),
-                    'user_dislikes': dic}
+                    'dislike_count': cnt_dic,
+                    'user_dislikes': info_dic}
         return json.jsonify(res_data)
     except Exception as e:
         res_data = {'status': status_code.fail,
                     'reason': e.message}
         return json.jsonify(res_data)
-
-
-
-
