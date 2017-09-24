@@ -6,6 +6,16 @@ function getCurrentUserId(){
     return parts[parts.length-1];
 }
 
+function hashstr(str){
+	var hash = 0;
+	if (str.length == 0) return hash;
+	for (i = 0; i < str.length; i++) {
+		char = str.charCodeAt(i);
+		hash = ((hash<<5)-hash)+char;
+		hash = hash & hash; // Convert to 32bit integer
+	}
+	return hash;
+}
 
 function renderDislikeButtons(likelinks, keys, dislike_count, disliked){
     for(var i = 0; i < likelinks.length; i++){
@@ -48,47 +58,39 @@ function updateDislikeButtons(){
 
         target_likelinks.push(likelinks[i]);
 
-        var sec = 0;
-        var current_form = likelinks[i];
-        var post_id = null;
+        sec = 0;
+        current_form = likelinks[i];
+        post_id = "";
+
         
+        // main page node
+        while(current_form.nodeName != "FORM" && sec < 20){
+            current_form = current_form.parentNode;
+            sec++;
+        }
+
+        for(var j = 0; j < current_form.childElementCount; j++){
+            if(!current_form.children[j] || current_form.children[j].nodeName != "INPUT") break;
+            if(current_form[j].getAttribute("name") == "ft_ent_identifier"){
+                post_id = current_form[j].getAttribute("value");
+                break;
+            }
+        }
+
         if(likelinks[i].className.search("UFIReactionLink") != -1){
             // comment node
             
-            while(current_form && current_form.nodeName != "SPAN" && sec < 2){
+            while(current_form && current_form.className != "UFICommentContentBlock" && sec < 10){
                 current_form = current_form.parentElement;
                 sec++;
             }
 
-            while(current_form && !current_form.hasAttribute("ajaxify") && sec < 6){
-                current_form = current_form.nextSibling;
-                found = current_form.hasAttribute("ajaxify");
-                sec++;
-            }
+            current_form = current_form.querySelector('span[class="UFICommentBody"]');
+            str = current_form.firstChild.firstChild.textContent;
 
-            if(current_form.hasAttribute("ajaxify")) {
-                var str = current_form.getAttribute("ajaxify");
-                var re = /ft_ent_identifier=(\d+_\d+)&/;
-                var mat = str.match(re);
-                if(mat) post_id = mat[0];
-            }
+            post_id += "_" + hashstr(str);
         }
 
-        else {
-            // main page node
-            while(current_form.nodeName != "FORM" && sec < 20){
-                current_form = current_form.parentNode;
-                sec++;
-            }
-
-            for(var j = 0; j < current_form.childElementCount; j++){
-                if(!current_form.children[j] || current_form.children[j].nodeName != "INPUT") break;
-                if(current_form[j].getAttribute("name") == "ft_ent_identifier"){
-                    post_id = current_form[j].getAttribute("value");
-                    break;
-                }
-            }
-        }
 
         keys.push(post_id);
         target_keys.push(post_id);
@@ -127,8 +129,9 @@ function buildDislikeButton(like_btn, is_disliked){
     var new_btn = document.createElement("a");
     new_btn.setAttribute("class", "dislike");
     image_icon = document.createElement("img");
-    image_icon.setAttribute("width","20");
-    image_icon.setAttribute("height","20");
+    image_icon.setAttribute("class", "dislike");
+    image_icon.setAttribute("width","23");
+    image_icon.setAttribute("height","25");
     image_icon.setAttribute("border","0");
     like_btn.parentElement.insertBefore(new_btn, like_btn.nextSibling);
     new_btn.parentElement.insertBefore(image_icon, like_btn.nextSibling);

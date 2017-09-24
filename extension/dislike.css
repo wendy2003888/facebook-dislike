@@ -1,13 +1,13 @@
 .dislike{
     font-family:inherit;
-    align-item: center;
     font-size:  13px;
     font-weight:bold;
-    maigin:     0px;
+    margin:     0px;
     padding:    4px 4px 4px 0px;
     display:    inline-flex;
     position:   relative;
-    height:     15px;
-    top:        5px;
+    height:     18px;
     position:   relative;
+    top: 4px;
+    vertical-align: center;
 }
