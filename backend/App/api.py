@@ -38,12 +38,19 @@ def user_undislike():
                     'reason': e.message}
         return json.jsonify(res_data)
         
-@app.route(url.GET_DISLIKE_COUNT_URI, methods=['GET'])
-def get_dislike_count():
+@app.route(url.GET_DISLIKE_INFO_URI, methods=['POST'])
+def get_dislike_info():
     try:
-        cnt = Dislike.query.count()
+        req_data = request.get_json()
+        userid, posts = req_data['user_id'], req_data['posts']
+        # Which is faster? join the column user_id in posts or for loop
+        rows = Dislike.query.with_entities(Dislike.postid).filter(Dislike.userid==userid, Dislike.postid.in_(posts)).all()
+        dic = dict(map(lambda x : (x, False), posts))
+        for row in rows:
+            dic[row.postid] = True
         res_data = {'status': status_code.success,
-                    'dislike_count': cnt}
+                    'dislike_count': len(rows),
+                    'user_dislikes': dic}
         return json.jsonify(res_data)
     except Exception as e:
         res_data = {'status': status_code.fail,
