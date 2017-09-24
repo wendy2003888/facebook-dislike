@@ -1,61 +1,53 @@
 # -*- coding:utf-8 -*-
-from App import app
+from App import app, url, db
 from flask import json, request
+
+from models import Dislike
 import status_code
 
-@app.route('/user_dislike', methods=['POST'])
+@app.route(url.USER_DISLIKE_URI, methods=['POST'])
 def user_dislike():
     try:
         req_data = request.get_json()
-        postid, username = req_data['post_id'], req_data['user_id']
-        '''
-            add data to db
-        '''
+        postid, userid = req_data['post_id'], req_data['user_id']
+        row = Dislike(postid, userid)
+        row.save()
         res_data = {'status': status_code.success,
-                    'updated_count': 0,
+                    'updated_count': Dislike.query.count(),
                     'reason': ''}
         return json.jsonify(res_data)
     except Exception as e:
         res_data = {'status': status_code.fail,
-                    'reason': e}
+                    'reason': e.message}
         return json.jsonify(res_data)
 
-@app.route('/user_undislike', methods=['POST'])
+@app.route(url.USER_UNDISLIKE_URI, methods=['POST'])
 def user_undislike():
     try:
         req_data = request.get_json()
-        postid, username = req_data['post_id'], req_data['user_id']
-        '''
-            delete data on db
-        '''
+        postid, userid = req_data['post_id'], req_data['user_id']
+        row = Dislike.query.filter_by(postid=postid, userid=userid).first_or_404()
+        db.session.delete(row)
+        db.session.commit()
         res_data = {'status': status_code.success,
-                'updated_count': 0,
-                'reason': ''}
-        res = Reponse(respons_data)
-        res.headers['Content-Type'] = "application/json; charset=utf-8"
-        return json.dump(res)
+                    'updated_count': Dislike.query.count(),
+                    'reason': ''}
+        return json.jsonify(res_data)
     except Exception as e:
         res_data = {'status': status_code.fail,
-                    'reason': e}
+                    'reason': e.message}
         return json.jsonify(res_data)
         
-    
-    
-
-@app.route('/get_dislike_count', methods=['GET'])
+@app.route(url.GET_DISLIKE_COUNT_URI, methods=['GET'])
 def get_dislike_count():
     try:
-        req_data = request.get_json()
-        #postid, username = req_data['post_id'], req_data['user_id']
-        '''
-            select from db
-        '''
+        cnt = Dislike.query.count()
         res_data = {'status': status_code.success,
-                    'dislike_count': 0}
+                    'dislike_count': cnt}
         return json.jsonify(res_data)
     except Exception as e:
         res_data = {'status': status_code.fail,
-                    'reason': e}
+                    'reason': e.message}
         return json.jsonify(res_data)
 
 
